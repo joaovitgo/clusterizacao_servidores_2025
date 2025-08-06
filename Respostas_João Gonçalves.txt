@@ -1,0 +1,69 @@
+RESPOSTA CHECAGEM 05/08/2025
+
+Aluno: João Vitor de Souza Gonçalves
+
+1.1
+Processo 0 enviando dado: 42 para processo 1
+Processo 1 recebeu dado: 42 do processo 0
+
+
+
+2.1
+O MPI_Scatter, apesar de não ser utilizado, trata-se de um MPI responsável por distribuir partes de um array de dados do prcesso para todos os processos do comunicados. Ou seja, se o root tem um array com 20 partes, cada processo recebe uma parte desse array. Ele basicamente pega o vetor e o divide entre todos os processos. No código usado é feito o uso de MPI_Send e MPI_Recv para enviar um dado do processo 0 para o processo 1.
+
+2.2
+Ao contrário do MPI_Scatter, o MPI_Gather recolhe dados de vários processos em um único processo.
+
+2.3
+Isso ocorre pois somente o processo 0 tem todos os dados necessários para ordenar.
+
+
+
+
+3.1
+#include <mpi.h>
+#include <stdio.h>
+
+int main(int argc, char** argv) {
+    int rank, size;
+    int dado;
+    int resultado[4]; // usado apenas no root
+
+    MPI_Init(&argc, &argv);  
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank); 
+    MPI_Comm_size(MPI_COMM_WORLD, &size); 
+
+
+
+    dado = rank * 10;
+
+    MPI_Gather(&dado, 1, MPI_INT, resultado, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("Processo 0 reuniu os dados: ");
+        for (int i = 0; i < 4; i++) {
+            printf("%d ", resultado[i]);
+        }
+        printf("\n");
+    }
+
+    MPI_Finalize();
+    return 0;
+}
+
+3.2
+Processo 0 reuniu os dados: 0 10 20 30
+
+
+
+4.1
+| Processos | Tempo (real) |
+|-----------|--------------|
+| 2         |   44s        |
+| 4         |   41s        |
+| 6         |   41s        |
+
+4.2
+Sim, o uso da CPU está balanceado entre os processos, nos casos: o programa foi executado com o mesmo número de processos que de CPUs disponíveis. E se todos os processos MPI executam algum trabalho.
+
+4.3 (Opcional)
